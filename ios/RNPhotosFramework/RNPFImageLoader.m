@@ -33,7 +33,13 @@ RCT_EXPORT_MODULE()
     if([results count] == 0) {
         return nil;
     }
-    return [results firstObject];
+
+    @try {
+        return [results firstObject];
+    }
+    @catch (NSException *exception) {
+        return nil;
+    }
 }
 
 -(RCTImageLoaderCancellationBlock) loadAssetAsData:(NSURL *)imageURL                                  completionHandler:(RNPFDataLoaderCompletionBlock)completionHandler {
