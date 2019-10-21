@@ -29,13 +29,18 @@
 }
 
 +(NSDictionary *)CLLocationToJson:(CLLocation *)loc {
-    return loc ? @{
-                       @"latitude": @(loc.coordinate.latitude),
-                       @"longitude": @(loc.coordinate.longitude),
-                       @"altitude": @(loc.altitude),
-                       @"heading": @(loc.course),
-                       @"speed": @(loc.speed),
-                       } : @{};
+    @try {
+      return loc ? @{
+                         @"latitude": @(loc.coordinate.latitude),
+                         @"longitude": @(loc.coordinate.longitude),
+                         @"altitude": @(loc.altitude),
+                         @"heading": @(loc.course),
+                         @"speed": @(loc.speed),
+                         } : @{};
+   }
+   @catch (NSException *exception) {
+      return @{};
+   }
 }
 
 +(NSString *)convertEnumToStringValue:(int)type andValues:(NSDictionary *)values {
