@@ -82,7 +82,7 @@
                                              [reveredMediaTypes objectForKey:@([asset mediaType])], @"mediaType",
                                              assetIndex, @"collectionIndex",
                                              nil];
-        
+
         if([asset mediaType] == PHAssetMediaTypeVideo || [asset mediaType] == PHAssetMediaTypeAudio) {
             [responseDict setObject:@([asset duration]) forKey:@"duration"];
         }
@@ -93,7 +93,7 @@
         if(includeResourcesMetadata) {
             [self extendAssetDictWithAssetResourcesMetadata:responseDict andPHAsset:asset];
         }
-        
+
 
         [uriArray addObject:responseDict];
     }
@@ -142,21 +142,25 @@
 
     for(int i = 0; i < resources.count;i++) {
         PHAssetResource *resourceMetadata = [resources objectAtIndex:i];
-        
+
         NSString *mimeType = (NSString *)[NSNull null];
         CFStringRef mimeTypeCString = UTTypeCopyPreferredTagWithClass((__bridge CFStringRef _Nonnull)(resourceMetadata.uniformTypeIdentifier), kUTTagClassMIMEType);
         if(mimeTypeCString != nil) {
             mimeType = (__bridge NSString *)(mimeTypeCString);
         }
-        
-        [arrayWithResourcesMetadata addObject:@{
-                                                     @"originalFilename" : resourceMetadata.originalFilename,
-                                                     @"assetLocalIdentifier" : resourceMetadata.assetLocalIdentifier,
-                                                     @"uniformTypeIdentifier" : resourceMetadata.uniformTypeIdentifier,
-                                                     @"type" : [[RCTConvert PHAssetResourceTypeValuesReversed] objectForKey:@(resourceMetadata.type)],
-                                                     @"mimeType" : mimeType,
-                                                     @"fileExtension" : [resourceMetadata.originalFilename pathExtension]
-                                                     }];
+
+        // resourceMetadata.type == 16 causes fatal error
+        @try {
+          [arrayWithResourcesMetadata addObject:@{
+                                                       @"originalFilename" : resourceMetadata.originalFilename,
+                                                       @"assetLocalIdentifier" : resourceMetadata.assetLocalIdentifier,
+                                                       @"uniformTypeIdentifier" : resourceMetadata.uniformTypeIdentifier,
+                                                       @"type" : [[RCTConvert PHAssetResourceTypeValuesReversed] objectForKey:@(resourceMetadata.type)],
+                                                       @"mimeType" : mimeType,
+                                                       @"fileExtension" : [resourceMetadata.originalFilename pathExtension]
+                                                       }];
+        }
+        @catch (NSException *exception) {}
     }
 
     [dictToExtend setObject:arrayWithResourcesMetadata forKey:@"resourcesMetadata"];
@@ -188,19 +192,19 @@
         AssetEnumerationDirection enumerationOptionsEndToStart = assetDisplayBottomUp ? AssetEnumerationDirectionFromStart : AssetEnumerationDirectionFromEnd;
         // display assets from the bottom to top of page if assetDisplayBottomUp is true
         AssetEnumerationDirection enumerationOptions = assetDisplayStartToEnd ? enumerationOptionsStartToEnd : enumerationOptionsEndToStart;
-        
-        
+
+
         if(enumerationOptions == AssetEnumerationDirectionFromStart) {
             for(int i = first; i < last; i++) {
                 PHAsset *asset = [assetsFetchResult objectAtIndex:i];
                 [assets addObject:[[PHAssetWithCollectionIndex alloc] initWithAsset:asset andCollectionIndex:[NSNumber numberWithInt:i]]];
-                
+
             }
         }else {
             for(int i = (last - 1); i >= first; i--) {
                 PHAsset *asset = [assetsFetchResult objectAtIndex:i];
                 [assets addObject:[[PHAssetWithCollectionIndex alloc] initWithAsset:asset andCollectionIndex:[NSNumber numberWithInt:i]]];
-                
+
             }
         }
     }
@@ -324,7 +328,7 @@
             NSURL *path = [info objectForKey:@"PHImageFileURLKey"];
             [editingDictionary setObject:[path absoluteString] forKey:@"fileUrl"];
         }
-        
+
         completeBlock(editingDictionary);
     }];
 }
@@ -338,7 +342,7 @@
     BOOL updateFavorite = NO;
     BOOL updateCreationDate = NO;
     BOOL updateLocation = NO;
-    
+
     NSString *hiddenValue = [params objectForKey:@"hidden"];
     BOOL hidden = false;
     if(hiddenValue) {
@@ -348,7 +352,7 @@
             updateHidden = YES;
         }
     }
-    
+
     NSString *favoriteValue = [params objectForKey:@"favorite"];
     BOOL favorite = false;
     if(favoriteValue) {
@@ -358,8 +362,8 @@
             updateFavorite = YES;
         }
     }
-    
-    
+
+
     NSString *creationDateValue = [params objectForKey:@"creationDate"];
     NSDate *creationDate = asset.creationDate;
     if(creationDateValue) {
@@ -369,7 +373,7 @@
             updateCreationDate = YES;
         }
     }
-    
+
     NSDictionary *locationValue = [RCTConvert NSDictionary:params[@"location"]];
     CLLocation *location = asset.location;
     if(locationValue) {
